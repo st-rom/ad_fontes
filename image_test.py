@@ -2,49 +2,53 @@ from PIL import Image
 
 
 def ad_pontes(img, ps):
-    broken = False
-    pixels = img.load()# create the pixel map
+    pixels = img.load()#  create the pixel map
+    bgs = []#list of contour color pixels which are background og object
     pa = ps
-    conts = [pa]
-    position = 0
-    cont_col = pixels[pa[0], pa[-1]]
-    pcn1, position1 = search_nearest(pixels, pa, position)
+    conts = [pa]#list of contour pixels
+    position = 0#position of nearest contour pixel(out of 8)
+    cont_col = pixels[pa[0], pa[-1]]#color of starting pixel
+    pcn1, position1 = search_nearest(pixels, pa, position, bgs)
     if position1 is None:
+        #print('pp')
         return conts
-    pcn2, position2 = search_nearest(pixels, pa, position, False)
-    if pcn1 == pcn2:
-        pcn = pcn1
-        if pixels[pa[0], pa[-1]][0] + 1 != 256:
-            pixels[pa[0], pa[-1]] = (pixels[pa[0], pa[-1]][0] + 1, pixels[pa[0], pa[-1]][1], pixels[pa[0], pa[-1]][2])
-        else:
-            pixels[pa[0], pa[-1]] = (pixels[pa[0], pa[-1]][0] - 1, pixels[pa[0], pa[-1]][1], pixels[pa[0], pa[-1]][2])
-        broken = True
-    else:
-        pe = pa
-        position = position1
+    pcn2, position2 = search_nearest(pixels, pa, position, bgs, False)
+    while pcn1 == pcn2:
+        conts.remove(pa)
+        bgs.append(pa)
         pa = pcn1
         conts.append(pa)
-        if len(conts) == 2:
-            print('qwq', conts, position)
+        pcn1, position1 = search_nearest(pixels, pa, position, bgs)
+        if position1 is None:
+            return conts
+        pcn2, position2 = search_nearest(pixels, pa, position, bgs, False)
+    pe = pa
+    position = position1
+    print('ss', position1, pcn1, position2, pcn2, pa)
+    pa = pcn1
+    conts.append(pa)
+    #print('poo')
     while True:
-        if broken is False:
-            position = (position + 6) % 8
-            pcn, position = search_nearest(pixels, pa, position)
-        if pcn is not None and pcn != pe and pcn not in conts and broken is False:
+        #print(len(conts), conts)
+        #print(pixels[conts[-1][0], conts[-1][-1]])
+        '''
+        if len(conts) % 200 == 0:
+            new_img = Image.new('RGB', [img.size[0], img.size[1]], 'white')
+            new_pixels = new_img.load()
+            for i in conts:
+                new_pixels[i[0], i[-1]] = cont_col
+            new_img.show()
+        '''
+        #print(position, pa)
+        position = (position + 6) % 8
+        pcn, position = search_nearest(pixels, pa, position, bgs)
+        if pcn is not None and pcn != pe and pcn not in conts:
             pa = pcn
             conts.append(pa)
-            if len(conts) == 2:
-                print('dodod',conts)
         elif pcn is not None and pcn != pe and pcn in conts:
             conts.remove(pa)
-            if pixels[pa[0], pa[-1]][0] + 1 != 256:
-                pixels[pa[0], pa[-1]] = (pixels[pa[0], pa[-1]][0] + 1, pixels[pa[0], pa[-1]][1],
-                                         pixels[pa[0], pa[-1]][2])
-            else:
-                pixels[pa[0], pa[-1]] = (pixels[pa[0], pa[-1]][0] - 1, pixels[pa[0], pa[-1]][1],
-                                         pixels[pa[0], pa[-1]][2])
+            bgs.append(pa)
             pa = conts[-1]
-            broken = False
         elif pcn is None or pcn == pe:
             new_img = Image.new('RGB', [img.size[0], img.size[1]], 'white')
             new_pixels = new_img.load()
@@ -54,65 +58,69 @@ def ad_pontes(img, ps):
             return conts
 
 
-def search_nearest(pixels, ps, d, way=True):
-    st = d
+def search_nearest(pixels, ps, d, bgs, way=True):
+    st = d#saving position in case way is false(loop goes the other way around)
     i = 0
+    coords = {0: [-1, -1], 1: [0, -1], 2: [1, -1], 3: [1, 0], 4: [1, 1], 5: [0, 1], 6: [-1, 1], 7: [-1, 0]}#coordinats
     for b in range(d, d + 8):
         b %= 8
         if way is False:
             b = st - i
             if b < 0:
                 b += 8
-        contour_pixel = pixels[ps[0], ps[-1]]
-        try:
-            if b == 0 and pixels[ps[0] - 1, ps[-1] - 1] == contour_pixel:
-                return [ps[0] - 1, ps[-1] - 1], b
-        except IndexError:
-            pass
-        try:
-            if b == 1 and pixels[ps[0], ps[-1] - 1] == contour_pixel:
-                return [ps[0], ps[-1] - 1], b
-        except IndexError:
-            pass
-        try:
-            if b == 2 and pixels[ps[0] + 1, ps[-1] - 1] == contour_pixel:
-                return [ps[0] + 1, ps[-1] - 1], b
-        except IndexError:
-            pass
-        try:
-            if b == 3 and pixels[ps[0] + 1, ps[-1]] == contour_pixel:
-                return [ps[0] + 1, ps[-1]], b
-        except IndexError:
-            pass
-        try:
-            if b == 4 and pixels[ps[0] + 1, ps[-1] + 1] == contour_pixel:
-                return [ps[0] + 1, ps[-1] + 1], b
-        except IndexError:
-            pass
-        try:
-            if b == 5 and pixels[ps[0], ps[-1] + 1] == contour_pixel:
-                return [ps[0], ps[-1] + 1], b
-        except IndexError:
-            pass
-        try:
-            if b == 6 and pixels[ps[0] - 1, ps[-1] + 1] == contour_pixel:
-                return [ps[0] - 1, ps[-1] + 1], b
-        except IndexError:
-            pass
-        try:
-            if b == 7 and pixels[ps[0] - 1, ps[-1]] == contour_pixel:
-                return [ps[0] - 1, ps[-1]], b
-        except IndexError:
-            pass
+        e = exc(coords[b][0], coords[b][-1], pixels, ps, bgs)#next contour pixel
+        if e is not None:
+            return e, b
         i += 1
     return None, None
 
 
-#img = Image.open("C:/Users/voyo/Pictures/Screenshots/test.png")
-#print(ad_pontes(img, [335, 129]))
-#img = Image.open("C:/Users/voyo/Pictures/Screenshots/star_test.png")
-#print(ad_pontes(img, [197, 92]))
-#print(ad_pontes(img, [222, 97]))
-img = Image.open("C:/Users/voyo/Pictures/Screenshots/disfigured_test.png")
-print(ad_pontes(img, [187, 172]))
+def exc(m, n, pixels, ps, bgs):
+    contour_pixel = pixels[ps[0], ps[-1]]
+    try:
+        if contour_pixel[0] - 10 <= pixels[ps[0] + n,
+                                           ps[-1] + m][0] <= contour_pixel[0] + 10 and \
+                                        contour_pixel[1] - 10 <= pixels[ps[0] + n,
+                                                                        ps[-1] + m][1] <= contour_pixel[1] + 10 and\
+                                        contour_pixel[2] - 10 <= pixels[ps[0] + n,
+                                                                        ps[-1] + m][2] <= contour_pixel[2] + 10 and\
+                        [ps[0] + n, ps[-1] + m] not in bgs:
+            return [ps[0] + n, ps[-1] + m]
+    except IndexError:
+        return None
 
+
+
+
+
+
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/test.png")
+#print(ad_pontes(img, [335, 129]))
+#print(ad_pontes(img, [327, 149]))
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/star_test.png")
+#print(ad_pontes(img, [430, 139]))
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/disfigured_test.png")
+#print(ad_pontes(img, [187, 172]))
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/infrared.jpg")
+#print(ad_pontes(img, [60, 113]))
+#print(ad_pontes(img, [293, 131]))
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/test_algo.jpg")
+#print(ad_pontes(img, [213, 307]))
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/hm.png")
+#print(ad_pontes(img, [260, 254]))
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/tree.png")
+#print(ad_pontes(img, [950, 350]))
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/test_algo2.jpg") #30
+#print(ad_pontes(img, [113, 130]))
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/planet.png") #20
+#print(ad_pontes(img, [215, 350]))
+#print(ad_pontes(img, [191, 191]))
+#img = Image.open("C:/Users/voyo/Pictures/ad_fontes/glasses.jpg") #10
+#print(ad_pontes(img, [424, 260]))
+
+#pixels = img.load()
+#print(pixels[214, 350])
+#x = ad_pontes(img, [213, 307])
+#for i in x:
+#   print(pixels[i[0], i[1]])
+#16 27 54
