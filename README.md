@@ -7,7 +7,7 @@
  At the end program will show image of contour pixels, time it took to execute this program, number of contour pixels and return them.
  With commands in cmd 
 
- >> ./python ad_fontes.py  'arg'
+ >> ./python ad_fontes.py  'args'
 
  you can run this program.
 
