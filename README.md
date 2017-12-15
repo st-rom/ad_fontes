@@ -1,4 +1,4 @@
-"Ad Fontes" Research Project
+""""Ad Fontes" Research Project"""
 «Image backward contour tracing algorithm» for Algorithm and Linear Algebra courses.
 Made by Shtohrinets Bohdan and Roman Stepaniuk
 
