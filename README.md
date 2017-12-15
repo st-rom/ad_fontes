@@ -6,7 +6,6 @@
 +After this you will see resultat of segmantation of this image using Watershed algorithm. I used library cv2 to do this algorithm. All it does is that it draws contour around all objects it can detect as different objects. This algorithm helps overall program work better but it still isn't working perfectly. So even without it algorithm will work just fine. 
 +At the end program will show image of contour pixels, time it took to execute this program, number of contour pixels and return them.
 +With commands in cmd 
-
 +>> ./python ad_fontes.py  'arg'
 +you can run this program.
 +Integer from 0 to 255 as argument will change range in which next pixel will be conted as contour pixel. Usually it shouldn't be used.
