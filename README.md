@@ -18,6 +18,14 @@
  Argument 'save' will save contour of image as ad_fontes_contour.jpg.
 
  Argument 'steps' will be opening in gallery contour of image every 200 pixels.
+ 
+ Images hard_man.jpg and hard_gus.jpg are harder images which work(but not perfectly) if you choose good starting pixel.
+ 
+ Fro example hard_man.jpg will work fine if you choose starting pixel near [240, 105], or [100, 110], or [415, 110].
+ 
+ And hard_gus.jpg will work for example with piel near [565, 120].
+ 
+ Not perfect shape of objects happens because of usually bad result of Watershed segmentation algorithm and big difference in color in some parts of object.
 
  Made by [Shtohrinets Bohdan](https://github.com/Bodi44) and [Roman Stepaniuk](https://github.com/st-rom)
  # Video demonstration: https://drive.google.com/file/d/1USlwHTUDYsZyT0_vic6nXtbBBSYSfTBC/view?usp=sharing
